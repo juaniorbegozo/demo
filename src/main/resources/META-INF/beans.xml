@@ -1,0 +1,11 @@
+<beans>
+  <interceptors>
+    <class>ar.gob.mendoza.seguridad.util.security.SecureInterceptor
+    </class>
+    <class>ar.gob.mendoza.seguridad.util.log.LogInterceptor
+    </class>    
+    <class>ar.gob.mendoza.seguridad.util.crypto.CryptoInterceptor    
+    </class>
+  </interceptors>
+  
+</beans>
