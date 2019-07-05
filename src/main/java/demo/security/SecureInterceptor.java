@@ -4,8 +4,8 @@ import java.lang.annotation.Annotation;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
@@ -17,6 +17,9 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.KeycloakPrincipal;
+import org.keycloak.KeycloakSecurityContext;
+
+import demo.services.KeycloakProxyService;
 
 @Secure
 @Interceptor
@@ -26,6 +29,9 @@ public class SecureInterceptor {
 
 	@Inject
 	private HttpServletRequest request;
+	
+	@Inject
+	private KeycloakProxyService keycloakService;
 
 	@AroundInvoke
 	public Object validateRoles(InvocationContext ctx) throws Exception {
@@ -45,11 +51,11 @@ public class SecureInterceptor {
 			return Response.status(403).build();
 		}
 		
-		KeycloakPrincipal kprincipal = ((KeycloakPrincipal) securityContext.getUserPrincipal());
-		
-		kprincipal.
-				
-		if (keycloakDao.hasRole(kprincipal.getName(), Arrays.asList(rolesAllowed).stream().map(role->role.name()).collect(Collectors.toList()))) {
+		KeycloakSecurityContext keycloakSecurityContext = ((KeycloakPrincipal) securityContext.getUserPrincipal())
+				.getKeycloakSecurityContext();
+
+		List<String> userRoles = keycloakService.getRoles(keycloakSecurityContext.getToken().getPreferredUsername());
+		if (Arrays.asList(rolesAllowed).stream().anyMatch(role -> userRoles.contains(role))) {
 			return ctx.proceed();
 		} else {
 			Map<String, String> message = new HashMap<>();
